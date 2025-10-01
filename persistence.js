@@ -45,14 +45,14 @@ async function updatePhoto(id, title, description) {
  * Adds a single tag to a photo by ID and saves the change.
  * If the photo is not found, no changes are made.
  * @param id Photo ID to tag.
- * @returns Nothing.
+ * @returns true if updated and false if not updated.
  */
 async function addTag(id, tagName) {
     let photos = await listPhotos()
     let photo = await findPhoto(id)
 
     if (!photo) {
-        return
+        return false
     }
 
     for (let i = 0; i < photos.length; i++) {
@@ -62,6 +62,8 @@ async function addTag(id, tagName) {
     }
 
     await writeFile(photos)
+
+    return true
 
 }
 

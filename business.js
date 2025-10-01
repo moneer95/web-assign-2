@@ -1,5 +1,33 @@
- 
-import { updatePhoto, addTag, listPhotos, listAlbums, findPhoto, readFile, listAlbums} from './persistence'
+
+import { updatePhoto, addTag, listPhotos, listAlbums, findPhoto, readFile, listAlbums } from './persistence'
+
+
+
+/**
+ * Check if the user has valid login details.
+ * Returns undefined if no user is found for the given username.
+ * @param userName user name.
+ * @returns user id.
+ */
+async function login(username, password) {
+    const u = await getUserByUsername(username);
+    if (!u || u.password !== password) return undefined;
+    return u.id; // userId
+}
+
+
+
+/**
+ * Check if the user is the owner of this photo.
+ * Throw an Error if the user is not the owner.
+ * @param {photo, userId} user name.
+ * @returns user id.
+*/
+function ensureOwnerOrThrow(photo, userId) {
+    if (!photo) throw new Error('PHOTO_NOT_FOUND');
+    if (String(photo.owner) !== String(userId)) throw new Error('FORBIDDEN');
+}
+
 
 
 /**
@@ -10,9 +38,10 @@ import { updatePhoto, addTag, listPhotos, listAlbums, findPhoto, readFile, listA
  * @param id Photo ID to format.
  * @returns A formatted photo object or undefined.
  */
-async function formattedPhoto(id) {
+async function formattedPhoto(userId, id) {
     let photo = await findPhoto(id)
 
+    ensureOwnerOrThrow(photo, userId);
     if (!photo) {
         return
     }
@@ -34,6 +63,13 @@ async function formattedPhoto(id) {
 
 
 
+async function updatePhotoById(userId, id, title, description){
+    let photo = await findPhoto(id)
+    ensureOwnerOrThrow(photo, userId);
+
+    
+    return await updatePhoto(id, title, description)
+}
 
 
 
@@ -43,14 +79,16 @@ async function formattedPhoto(id) {
  * @param albumName The album name to filter by.
  * @returns An array of formatted photos in that album.
  */
-async function getAlbumPhotoList(albumName) {
+async function getAlbumPhotoList(userId, albumName) {
     let photos = await listPhotos()
+
 
     let albumPhotos = []
     for (let i = 0; i < photos.length; i++) {
 
         let photo = await formattedPhoto(photos[i].id)
         if (photo.albumNames.includes(albumName)) {
+            ensureOwnerOrThrow(photo, userId);
             albumPhotos.push(photo)
         }
     }
@@ -85,11 +123,22 @@ async function findAlbums(ids) {
     else {
         return ({ 'name': 'No Album for this ID' })
     }
-
 }
 
+
+async function addTagById(userId, tagId, tagName){
+    let photo = await findPhoto(id)
+    ensureOwnerOrThrow(photo, userId);
+
+    const isUpdated = await addTag(tagId, tagName)
+    return isUpdated
+}
+
+
 module.exports = {
+    login,
     formattedPhoto,
     getAlbumPhotoList,
-    findAlbums
+    addTagById,
+    updatePhotoById
 }
