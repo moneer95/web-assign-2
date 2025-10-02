@@ -1,3 +1,4 @@
+const fs = require('fs/promises')
 
 /**
  * Updates a photo's title and description by ID.
@@ -12,7 +13,7 @@ async function updatePhoto(id, title, description) {
     let newPhoto = await findPhoto(id)
 
     if (!newPhoto) {
-        return
+        return false
     }
 
     const newTitle = title
@@ -29,6 +30,7 @@ async function updatePhoto(id, title, description) {
 
     await writeFile(photos)
 
+    return true
 }
 
 
@@ -86,9 +88,6 @@ async function findPhoto(id) {
             return photos[i]
         }
     }
-
-    //notify if not found
-    console.log('no photo found with this id')
 }
 
 
@@ -122,8 +121,8 @@ async function listAlbums() {
  * @param userName userName you are looking for.
  * @returns user object.
  */
-function getUserByUserName(userName) {
-    const users = readFile('passwords.json')
+async function getUserByUserName(userName) {
+    const users = await readFile('passwords.json')
 
     return users.find(user => user.username == userName)
 }
@@ -153,8 +152,6 @@ async function readFile(fileName) {
 async function writeFile(data) {
     const jsonContent = JSON.stringify(data, null, 2)
     await fs.writeFile('photos.json', jsonContent)
-    console.log('file updated')
-
 }
 
 

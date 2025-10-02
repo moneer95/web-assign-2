@@ -1,5 +1,5 @@
 
-import { updatePhoto, addTag, listPhotos, listAlbums, findPhoto, readFile, listAlbums } from './persistence'
+const { updatePhoto, addTag, listPhotos, listAlbums, findPhoto, getUserByUserName } = require('./persistence')
 
 
 
@@ -10,7 +10,7 @@ import { updatePhoto, addTag, listPhotos, listAlbums, findPhoto, readFile, listA
  * @returns user id.
  */
 async function login(username, password) {
-    const u = await getUserByUsername(username);
+    const u = await getUserByUserName(username);
     if (!u || u.password !== password) return undefined;
     return u.id; // userId
 }
@@ -71,6 +71,33 @@ async function updatePhotoById(userId, id, title, description){
     return await updatePhoto(id, title, description)
 }
 
+/**
+ * Returns a list of formatted photos that belong to the given album name.
+ * Matching is currently case-sensitive because it uses a direct includes check.
+ * @param albumName The album name to filter by.
+ * @returns An array of formatted photos in that album.
+ */
+async function getMyPhotos(userId) {
+    let photos = await listPhotos()
+
+
+    let myPhotos = []
+    for (let i = 0; i < photos.length; i++) {
+
+        try{
+            let photo = await formattedPhoto(userId, photos[i].id)
+            myPhotos.push(photo)
+        }
+        catch(e){
+            continue
+        }
+    }
+
+    return myPhotos
+
+}
+
+
 
 
 /**
@@ -86,10 +113,15 @@ async function getAlbumPhotoList(userId, albumName) {
     let albumPhotos = []
     for (let i = 0; i < photos.length; i++) {
 
-        let photo = await formattedPhoto(photos[i].id)
-        if (photo.albumNames.includes(albumName)) {
-            ensureOwnerOrThrow(photo, userId);
-            albumPhotos.push(photo)
+
+        try{
+            let photo = await formattedPhoto(userId, photos[i].id)
+            if (photo.albumNames.includes(albumName.toLowerCase())) {
+                albumPhotos.push(photo)
+            }
+        }
+        catch(e){
+            continue
         }
     }
 
@@ -126,11 +158,11 @@ async function findAlbums(ids) {
 }
 
 
-async function addTagById(userId, tagId, tagName){
+async function addTagById(userId, id, tagName){
     let photo = await findPhoto(id)
     ensureOwnerOrThrow(photo, userId);
 
-    const isUpdated = await addTag(tagId, tagName)
+    const isUpdated = await addTag(id, tagName)
     return isUpdated
 }
 
@@ -140,5 +172,6 @@ module.exports = {
     formattedPhoto,
     getAlbumPhotoList,
     addTagById,
-    updatePhotoById
+    updatePhotoById,
+    getMyPhotos
 }
