@@ -1,12 +1,14 @@
 const fs = require('fs/promises')
 
 /**
- * Updates a photo's title and description by ID.
- * Prompts the user for new values (keeps old values if inputs are empty),
- * then writes the updated photos list back to disk.
- * Does nothing if the photo is not found.
- * @param id Photo ID to update.
- * @returns Nothing.
+ * Update a photo’s title and description by its id.
+ * Keeps old values if the new ones are empty.
+ * Writes changes back to disk.
+ *
+ * @param {string|number} id - photo id
+ * @param {string} title - new title (optional)
+ * @param {string} description - new description (optional)
+ * @returns {Promise<boolean>} true if updated, false if not found
  */
 async function updatePhoto(id, title, description) {
     let photos = await listPhotos()
@@ -34,20 +36,13 @@ async function updatePhoto(id, title, description) {
 }
 
 
-
-
-
-
-
-
-
-
-
 /**
- * Adds a single tag to a photo by ID and saves the change.
- * If the photo is not found, no changes are made.
- * @param id Photo ID to tag.
- * @returns true if updated and false if not updated.
+ * Add a tag to a photo by id.
+ * Saves the updated list to disk.
+ *
+ * @param {string|number} id - photo id
+ * @param {string} tagName - tag to add
+ * @returns {Promise<boolean>} true if tag added, false if not found
  */
 async function addTag(id, tagName) {
     let photos = await listPhotos()
@@ -66,19 +61,14 @@ async function addTag(id, tagName) {
     await writeFile(photos)
 
     return true
-
 }
 
 
-
-
-
-
 /**
- * Finds and returns a raw photo object (unformatted) by ID.
- * Logs a message and returns undefined if not found.
- * @param id Photo ID to search for.
- * @returns The matching raw photo or undefined.
+ * Look up a photo by id (raw, unformatted).
+ *
+ * @param {string|number} id - photo id
+ * @returns {Promise<object|undefined>} the photo or undefined if not found
  */
 async function findPhoto(id) {
     const photos = await listPhotos()
@@ -91,11 +81,10 @@ async function findPhoto(id) {
 }
 
 
-
 /**
- * Returns a list of all Photos inside photos.json file.
- * Throws if the file cannot be read or the contents are not valid JSON.
- * @returns array of Objects Photos.
+ * Read all photos from photos.json.
+ *
+ * @returns {Promise<object[]>} array of photo objects
  */
 async function listPhotos() {
     const photos = await readFile('photos.json')
@@ -104,9 +93,9 @@ async function listPhotos() {
 
 
 /**
- * Returns a list of all Albums inside albums.json file.
- * Throws if the file cannot be read or the contents are not valid JSON.
- * @returns array of Objects Albums.
+ * Read all albums from albums.json.
+ *
+ * @returns {Promise<object[]>} array of album objects
  */
 async function listAlbums() {
     const photos = await readFile('albums.json')
@@ -114,12 +103,12 @@ async function listAlbums() {
 }
 
 
-
 /**
- * Get a specific user object from  users file
- * return undefined if the user was not in file
- * @param userName userName you are looking for.
- * @returns user object.
+ * Get a user object by username from passwords.json.
+ * Returns undefined if not found.
+ *
+ * @param {string} userName
+ * @returns {Promise<object|undefined>} user object
  */
 async function getUserByUserName(userName) {
     const users = await readFile('passwords.json')
@@ -128,12 +117,11 @@ async function getUserByUserName(userName) {
 }
 
 
-
 /**
- * Reads a JSON file from disk and parses it.
- * Throws if the file cannot be read or the contents are not valid JSON.
- * @param fileName Path to the JSON file.
- * @returns The parsed JSON content.
+ * Read and parse a JSON file.
+ *
+ * @param {string} fileName - path to JSON file
+ * @returns {Promise<any>} parsed content
  */
 async function readFile(fileName) {
     const jsonContent = await fs.readFile(fileName, 'utf8')
@@ -144,18 +132,14 @@ async function readFile(fileName) {
 
 
 /**
- * Serializes data as pretty JSON and writes it to photos.json.
- * Overwrites the file and logs a confirmation on success.
- * @param data Any serializable data structure to persist.
- * @returns Nothing.
+ * Save data into photos.json (pretty-printed).
+ *
+ * @param {any} data - data to save
  */
 async function writeFile(data) {
     const jsonContent = JSON.stringify(data, null, 2)
     await fs.writeFile('photos.json', jsonContent)
 }
-
-
-
 
 
 module.exports = {

@@ -1,13 +1,13 @@
-
 const { updatePhoto, addTag, listPhotos, listAlbums, findPhoto, getUserByUserName } = require('./persistence')
 
 
-
 /**
- * Check if the user has valid login details.
- * Returns undefined if no user is found for the given username.
- * @param userName user name.
- * @returns user id.
+ * Try to log a user in with a username + password.
+ * If the user doesn’t exist or the password doesn’t match, returns undefined.
+ *
+ * @param {string} username
+ * @param {string} password
+ * @returns {Promise<string|undefined>} the user’s id if valid, otherwise undefined
  */
 async function login(username, password) {
     const u = await getUserByUserName(username);
@@ -16,27 +16,29 @@ async function login(username, password) {
 }
 
 
-
 /**
- * Check if the user is the owner of this photo.
- * Throw an Error if the user is not the owner.
- * @param {photo, userId} user name.
- * @returns user id.
-*/
+ * Make sure the photo belongs to this user.
+ * Throws an error if the photo is missing or owned by someone else.
+ *
+ * @param {object} photo - photo object with an `owner` field
+ * @param {string|number} userId
+ */
 function ensureOwnerOrThrow(photo, userId) {
     if (!photo) throw new Error('PHOTO_NOT_FOUND');
     if (String(photo.owner) !== String(userId)) throw new Error('FORBIDDEN');
 }
 
 
-
 /**
- * Builds a formatted view of a single photo by ID.
- * Looks up the raw photo, adds a human-readable date, and resolves album IDs to names.
- * Returns an object with id, filename, title, formattedDate, albumNames, and tags.
- * Returns undefined if no photo is found for the given id.
- * @param id Photo ID to format.
- * @returns A formatted photo object or undefined.
+ * Get one photo by id, check ownership, and add some extra info:
+ * - a human-readable date
+ * - album names instead of just ids
+ *
+ * Returns undefined if no photo was found.
+ *
+ * @param {string|number} userId
+ * @param {string|number} id
+ * @returns {Promise<object|undefined>} formatted photo or undefined
  */
 async function formattedPhoto(userId, id) {
     let photo = await findPhoto(id)
@@ -62,82 +64,76 @@ async function formattedPhoto(userId, id) {
 }
 
 
-
+/**
+ * Update title/description of a photo by id, only if owned by user.
+ *
+ * @param {string|number} userId
+ * @param {string|number} id
+ * @param {string} title
+ * @param {string} description
+ */
 async function updatePhotoById(userId, id, title, description){
     let photo = await findPhoto(id)
     ensureOwnerOrThrow(photo, userId);
 
-    
     return await updatePhoto(id, title, description)
 }
 
+
 /**
- * Returns a list of formatted photos that belong to the given album name.
- * Matching is currently case-sensitive because it uses a direct includes check.
- * @param albumName The album name to filter by.
- * @returns An array of formatted photos in that album.
+ * Get all photos that belong to the user, already formatted.
+ *
+ * @param {string|number} userId
+ * @returns {Promise<object[]>}
  */
 async function getMyPhotos(userId) {
     let photos = await listPhotos()
 
-
     let myPhotos = []
     for (let i = 0; i < photos.length; i++) {
-
-        try{
+        try {
             let photo = await formattedPhoto(userId, photos[i].id)
             myPhotos.push(photo)
-        }
-        catch(e){
+        } catch(e) {
             continue
         }
     }
-
     return myPhotos
-
 }
 
 
-
-
 /**
- * Returns a list of formatted photos that belong to the given album name.
- * Matching is currently case-sensitive because it uses a direct includes check.
- * @param albumName The album name to filter by.
- * @returns An array of formatted photos in that album.
+ * Get all photos for this user that belong to a specific album name.
+ * Album names are matched in lowercase.
+ *
+ * @param {string|number} userId
+ * @param {string} albumName
+ * @returns {Promise<object[]>}
  */
 async function getAlbumPhotoList(userId, albumName) {
     let photos = await listPhotos()
 
-
     let albumPhotos = []
     for (let i = 0; i < photos.length; i++) {
-
-
-        try{
+        try {
             let photo = await formattedPhoto(userId, photos[i].id)
             if (photo.albumNames.includes(albumName.toLowerCase())) {
                 albumPhotos.push(photo)
             }
-        }
-        catch(e){
+        } catch(e) {
             continue
         }
     }
-
     return albumPhotos
-
 }
 
 
-
-
 /**
- * Resolves an array of album IDs to their names (lowercased).
- * If none are found, returns an object like { name: 'No Album for this ID' }.
- * Consider normalizing this to always return an array for easier downstream use.
- * @param ids List of album IDs to resolve.
- * @returns An array of album names, or an object indicating none found.
+ * Given some album ids, return their names in lowercase.
+ * If none match, returns an object with a “No Album…” message.
+ *
+ * @param {Array<string|number>} ids
+ * @returns {Promise<string[]|object>}
  */
 async function findAlbums(ids) {
     const albums = await listAlbums()
@@ -151,13 +147,20 @@ async function findAlbums(ids) {
 
     if (foundAlbums.length) {
         return foundAlbums
-    }
-    else {
+    } else {
         return ({ 'name': 'No Album for this ID' })
     }
 }
 
 
+/**
+ * Add a tag to a photo if it belongs to the user.
+ *
+ * @param {string|number} userId
+ * @param {string|number} id
+ * @param {string} tagName
+ * @returns {Promise<boolean>} true if updated
+ */
 async function addTagById(userId, id, tagName){
     let photo = await findPhoto(id)
     ensureOwnerOrThrow(photo, userId);
