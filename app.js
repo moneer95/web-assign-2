@@ -59,10 +59,11 @@ app.post('/edit-photo', async (req, res) => {
 })
 
     if(!updated.matchedCount) {
-        res.render('edit_photo', {pid, updated: false})
+        res.render('edit_photo', {pid, updated: false, showMessage: true})
+        return
     }
 
-    res.render('edit_photo', {pid, updated: true})
+    res.render('edit_photo', {pid, updated: true, showMessage: true})
     
 })
 

@@ -83,8 +83,11 @@
         }
 
         .message {
-            padding: 1rem 4rem;
+            padding: 1rem 10rem;
             background: #000;
+            position: fixed;
+            top: 18%;
+            text-align: center;
         }
     </style>
 
@@ -92,20 +95,21 @@
 
 <body>
 
-    {{#if updated=="true"}}
-        <div class="message" style="background: blue">
-            <h3>mmmmm</h3>
-        </div>
+    {{#if showMessage}}
+
+        {{#if updated}}
+            <div class="message" style="background: rgb(151, 255, 151)">
+                <h3>Updated Successfully !</h3>
+                <a href="/">click here to return back</a>
+            </div>
+        {{else}}
+            <div class="message" style="background: rgb(255, 109, 109)">
+                <h3>Faild to Update!</h3>
+                <a href="/">please click here to return back</a>
+            </div>
+        {{/if}}
+
     {{/if}}
-
-    {{#if updated=="false"}}
-        <div class="message" style="background: red">
-            <h3>m,mmmmm</h3>
-        </div>
-    {{/if}}
-
-
-
 
 
     <div class="form-container">
