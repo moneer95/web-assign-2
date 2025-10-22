@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Your Details</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: cadetblue;
+            /* Highlight color */
+            outline: none;
+        }
+
+        button {
+            background-color: rgba(95, 158, 160, 0.758);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: rgba(95, 158, 160, 0.874);
+        }
+
+        button:active {
+            background-color: rgba(95, 158, 160, 0.956);
+        }
+
+        .message {
+            padding: 1rem 4rem;
+            background: #000;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    {{#if updated=="true"}}
+        <div class="message" style="background: blue">
+            <h3>mmmmm</h3>
+        </div>
+    {{/if}}
+
+    {{#if updated=="false"}}
+        <div class="message" style="background: red">
+            <h3>m,mmmmm</h3>
+        </div>
+    {{/if}}
+
+
+
+
+
+    <div class="form-container">
+        <h1>Submit Your Title and Description</h1>
+        <form action="/edit-photo" method="POST">
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" required></textarea>
+            </div>
+            <input type="hidden" id="pid" name="pid" value={{pid}}>
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+    </div>
+
+</body>
+
+</html>
